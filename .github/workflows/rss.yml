@@ -1,0 +1,40 @@
+name: Generate RSS Feeds
+
+on:
+  push:
+    paths:
+      - links.txt
+      - generate_rss.py
+      - .github/workflows/rss.yml
+
+permissions:
+  contents: write
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Install dependencies
+        run: |
+          pip install feedgenerator requests
+
+      - name: Generate RSS feeds
+        run: |
+          python generate_rss.py
+
+      - name: Commit and push feeds
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add feeds/
+          git commit -m "Update RSS feeds" || exit 0
+          git push
